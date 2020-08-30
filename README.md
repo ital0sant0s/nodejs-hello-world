@@ -74,3 +74,41 @@ Agora basta fazer uma chamada para http://localhost:3000/helloworld
 ```sh
 $ echo "$(minikube ip) some-host.local" | sudo tee -a /etc/hosts
 ```
+
+
+## Drone CI
+Para pipeline escolho o Drone CI, uma ferramenta que usa Kubernetes nativamente.
+
+#### Deploy do Drone CI
+Dependencias:
+- Criar um Client_ID e Client_Secret para qualquer um dos serviços Git suportados (GitHub, Gitlab, Bitbucket, etc)
+- Criar namespace drone
+
+No diretório mysql-example/helm/drone_ci temos um exemplo de values.yaml para fazer o deploy é necessário seguir os seguintes passos:
+```sh
+$ helm repo add drone https://charts.drone.io
+$ helm repo update
+```
+
+No diretório existem 2 values, devemos iniciar com o values.yaml que corresponde ao drone server e depois o drone-runner-kube-values.yaml
+Lembrando que alguns valores devem ser alterados no arquivo:
+- DRONE_SERVER_HOST
+- DRONE_GITHUB_CLIENT_ID
+- DRONE_GITHUB_CLIENT_SECRET
+```sh
+kubectl create namespace drone
+helm install drone drone/drone --namespace drone -f drone-values.yaml
+helm install drone-runner-kube drone/drone-runner-kube --namespace drone --values drone-runner-kube-values.yaml
+```
+
+#### Pipeline Drone CI
+A pipeline do drone ci deve estar na raiz do repo, com nome .drone.yaml, em nosso exemplo criei uma pipeline simples, que apenas faz o build e push da imagem para um repo Docker hub e faz o deploy do app via helm no kubernetes
+
+Para que a pipeline funcione alguns valores tem de ser cadastrados como secrets no drone
+- prod_docker_username
+- prod_docker_password
+- prod_api_server
+- prod_kubernetes_token
+
+Com esses secrets cadastrados, sempre que houver um push na master a pipeline será executada
+
