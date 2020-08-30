@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  some-mysql:
+    image: mysql:5.7
+    environment: 
+      - MYSQL_DATABASE=helloworld 
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+    networks:
+      - bubble
+    volumes:
+      - mysql-data:/var/lib/mysql
+  
+  hello-world:
+    build: .
+    image: italosantos/nodejs-mysql
+    environment:
+      - DB_HOST=some-mysql
+      - DB_USER=root
+      - DB_PASSWORD=my-secret-pw
+      - DB_NAME=helloworld
+    networks:
+      - bubble
+    ports:
+      - 3000:3000
+    depends_on: 
+      - some-mysql
+
+networks:
+  bubble:
+volumes:
+  mysql-data:

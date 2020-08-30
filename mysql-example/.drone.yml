@@ -1,0 +1,30 @@
+---
+kind: pipeline
+type: kubernetes
+name: hello-world
+
+steps:
+- name: build-hello-world
+  image: plugins/docker
+  settings:
+    username: kevinbacon
+    password: pa55word
+    repo: italosantos/nodejs-mysql
+    tags: latest
+  when:
+    event:
+      - push
+    branch:
+      - master
+
+- name: helm-deploy
+  image: pelotech/drone-helm3
+  settings:
+    namespace: helloworld
+    helm_command: upgrade
+    chart: ./helm/helloworld
+    release: helloworld
+    api_server:
+      from_secret: prod_api_server
+    kubernetes_token:
+      from_secret: prod_kubernetes_token
