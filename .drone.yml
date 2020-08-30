@@ -7,8 +7,11 @@ steps:
 - name: build-hello-world
   image: plugins/docker
   settings:
-    username: kevinbacon
-    password: pa55word
+    dockerfile: ./mysql-example/Dockerfile
+    username:
+      from_secret: prod_docker_username
+    password:
+      from_secret: prod_docker_password
     repo: italosantos/nodejs-mysql
     tags: latest
   when:
@@ -28,3 +31,8 @@ steps:
       from_secret: prod_api_server
     kubernetes_token:
       from_secret: prod_kubernetes_token
+  when:
+    event:
+      - push
+    branch:
+      - master
